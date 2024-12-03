@@ -1,41 +1,50 @@
 import argparse
+import threading
 from dataclasses import dataclass
 from os import system
 from time import sleep
 
+from rich.console import Console
+from rich.progress import track
+
+console = Console()
+
 
 def count(time: float):
-    # TODO allow pausing
-    for i in range(int(time)):
+    paused = threading.Event()
+
+    def toggle_pause():
+        while True:
+            input("Press Enter to pause/resume.")
+            if paused.is_set():
+                paused.clear()
+            else:
+                paused.set()
+
+    threading.Thread(target=toggle_pause, daemon=True).start()
+
+    for i in track(range(int(time)), description="Time left..."):
+        while paused.is_set():
+            sleep(0.1)
         sleep(1)
-        print(f"{time - i} seconds left", end="\r")
 
 
 def play_beep(beep_count: int):
-    # beep n times
     system(
         f"for i in $(seq 1 {beep_count}); do paplay "
         f"/usr/share/sounds/freedesktop/stereo/complete.oga; done")
 
 
 def notify(message: str):
-    # show message
     system(f"notify-send  -u critical -t 10000 '{message}'")
 
 
 def cycle(work_time: float, rest_time: float):
-    """
-    :param work_time:  time in minutes
-    :param rest_time:  time in minutes
-    :return:
-    """
-    # work time
-    print("Work Time")
+    console.print("[bold green]Work Time[/bold green]")
     count(work_time * 60)
-    # rest time
     notify("Rest Time Start")
     play_beep(3)
-    print("Rest Time")
+    console.print("[bold blue]Rest Time[/bold blue]")
     count(rest_time * 60)
     notify("Rest Time End")
     play_beep(1)
@@ -74,7 +83,7 @@ def main():
         state = State.load()
 
     for i in range(state.cycles):
-        print(f"Starting cycle {i + 1}")
+        console.print(f"[bold yellow]Starting cycle {i + 1}[/bold yellow]")
         cycle(state.work_time, state.rest_time)
 
 
