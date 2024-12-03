@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "timer"
+version = "0.1.0"
+description = ""
+authors = ["MaxAFriedrich <58374387+MaxAFriedrich@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+argparse = "^1.4.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
